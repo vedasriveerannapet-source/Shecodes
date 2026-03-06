@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<title>Video to Text Similarity Evaluation</title>
+
+<style>
+
+body{
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg,#f8e1f4,#e6f0ff);
+    margin:0;
+    padding:0;
+}
+
+.container{
+    width:60%;
+    margin:auto;
+    margin-top:40px;
+    background:white;
+    padding:30px;
+    border-radius:12px;
+    box-shadow:0 4px 15px rgba(0,0,0,0.1);
+}
+
+h1{
+    text-align:center;
+    color:#5a4fcf;
+}
+
+label{
+    font-weight:bold;
+}
+
+input,textarea{
+    width:100%;
+    padding:10px;
+    margin-top:8px;
+    margin-bottom:15px;
+    border-radius:6px;
+    border:1px solid #ccc;
+}
+
+button{
+    padding:10px 18px;
+    margin:5px;
+    border:none;
+    border-radius:6px;
+    background:#5a4fcf;
+    color:white;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#4038a0;
+}
+
+#result{
+    margin-top:20px;
+    padding:10px;
+    background:#f3f3ff;
+    border-radius:6px;
+}
+
+.score{
+    font-size:22px;
+    color:#d63384;
+}
+
+</style>
+
+<script>
+
+async function evaluateSimilarity(){
+
+    const videoFile = document.getElementById("videoFile").files[0];
+    const referenceText = document.getElementById("referenceText").value;
+
+    if(!videoFile){
+        alert("Please upload a video");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("video", videoFile);
+    formData.append("reference_text", referenceText);
+
+    document.getElementById("result").innerHTML="Processing video...";
+
+    try{
+
+        const response = await fetch("http://127.0.0.1:5000/analyze",{
+            method:"POST",
+            body:formData
+        });
+
+        const data = await response.json();
+
+        let resultHTML = "";
+
+        resultHTML += "<h3>Visual Description</h3>";
+        resultHTML += "<p>" + data.visual_description + "</p>";
+
+        if(data.audio){
+            resultHTML += "<h3>Audio Status</h3>";
+            resultHTML += "<p>" + data.audio + "</p>";
+        }
+
+        if(data.transcribed_text){
+            resultHTML += "<h3>Transcript</h3>";
+            resultHTML += "<p>" + data.transcribed_text + "</p>";
+        }
+
+        if(data.similarity){
+            resultHTML += "<h3>Similarity Score</h3>";
+            resultHTML += "<p class='score'>" + data.similarity.toFixed(2) + "%</p>";
+        }
+
+        document.getElementById("result").innerHTML = resultHTML;
+
+    }
+    catch(error){
+
+        document.getElementById("result").innerHTML="Error processing video";
+        console.error(error);
+
+    }
+}
+
+</script>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Video to Text Similarity Evaluation</h1>
+
+<label>Upload Video</label>
+<input type="file" id="videoFile" accept="video/*">
+
+<label>Reference Text</label>
+<textarea id="referenceText" rows="4" placeholder="Enter reference text"></textarea>
+
+<button onclick="evaluateSimilarity()">Evaluate Similarity</button>
+
+<div id="result"></div>
+
+</div>
+
+</body>
+
+</html>
