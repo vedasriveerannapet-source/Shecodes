@@ -1,0 +1,8 @@
+flask
+flask-cors
+numpy
+opencv-python
+moviepy
+sentence-transformers
+torch
+scikit-learn
